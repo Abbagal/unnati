@@ -1,0 +1,150 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String      @id @default(uuid())
+  email         String      @unique
+  password      String
+  name          String
+  year          Int?
+  branch        String?
+  college       String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  
+  profile       Profile?
+  roadmaps      Roadmap[]
+  assessments   Assessment[]
+  enrollments   Enrollment[]
+  chatSessions  ChatSession[]
+}
+
+model Profile {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Basic Info
+  year            Int?
+  branch          String?
+  college         String?
+  
+  // Skills and Interests (PostgreSQL supports arrays)
+  skills          String[]
+  interests       String[]
+  careerGoals     String?
+  strengths       String[]
+  weaknesses      String[]
+  profileScore    Int      @default(0)
+  
+  // GitHub Integration
+  githubUsername  String?
+  githubAnalysis  Json?
+  
+  // Resume
+  resumeUrl       String?
+  resumeAnalysis  Json?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Roadmap {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  title           String
+  description     String?
+  startDate       DateTime
+  endDate         DateTime
+  status          String   @default("active")
+  
+  milestones      Milestone[]
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Milestone {
+  id              String   @id @default(cuid())
+  roadmapId       String
+  roadmap         Roadmap  @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+  
+  title           String
+  description     String
+  category        String
+  targetOutcome   String
+  pros            String[]
+  cons            String[]
+  metrics         Json
+  actionSteps     Json[]
+  deadline        DateTime
+  completed       Boolean  @default(false)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Assessment {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  type            String
+  questions       Json[]
+  answers         Json[]
+  results         Json
+  score           Int?
+  
+  createdAt       DateTime @default(now())
+}
+
+model Course {
+  id              String   @id @default(cuid())
+  title           String
+  description     String
+  category        String
+  level           String
+  duration        String
+  instructor      String
+  thumbnail       String?
+  price           Float    @default(0)
+  isLive          Boolean  @default(false)
+  schedule        Json?
+  
+  enrollments     Enrollment[]
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Enrollment {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId        String
+  course          Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  
+  progress        Int      @default(0)
+  completed       Boolean  @default(false)
+  enrolledAt      DateTime @default(now())
+}
+
+model ChatSession {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  messages        Json[]
+  context         Json?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
