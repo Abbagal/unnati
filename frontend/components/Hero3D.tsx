@@ -4,7 +4,7 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { Text, Float } from '@react-three/drei';
 
 function FloatingText() {
-  const textRef = useRef();
+  const textRef = useRef<any>(null);
   
   useFrame((state) => {
     if (textRef.current) {
